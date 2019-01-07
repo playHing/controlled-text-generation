@@ -1,0 +1,69 @@
+$ python train_vae.py --save
+The `device` argument should be set by using `torch.device` or passing a string as an argument. This behavior will be deprecated soon and currently defaults to cpu.
+The `device` argument should be set by using `torch.device` or passing a string as an argument. This behavior will be deprecated soon and currently defaults to cpu.
+The `device` argument should be set by using `torch.device` or passing a string as an argument. This behavior will be deprecated soon and currently defaults to cpu.
+torch/nn/modules/rnn.py:46: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.3 and num_layers=1
+  "num_layers={}".format(dropout, num_layers))
+torch/nn/_reduction.py:49: UserWarning: size_average and reduce args will be deprecated, please use reduction='mean' instead.
+  warnings.warn(warning.format(ret))
+train_vae.py:69: UserWarning: torch.nn.utils.clip_grad_norm is now deprecated in favor of torch.nn.utils.clip_grad_norm_.
+  grad_norm = torch.nn.utils.clip_grad_norm(model.vae_params, 5)
+Iter-0; Loss: 8.3702; Recon: 8.3663; KL: 0.3937; Grad_norm: 0.0000;
+Sample: "sanctimonious twinkle com unwatchable tyco different actress mckay spectacle mannered oliviera troubling premise brisk fool"
+
+Iter-1000; Loss: 3.6791; Recon: 3.6562; KL: 2.2872; Grad_norm: 0.0000;
+Sample: "this a re ."
+
+Iter-2000; Loss: 3.3437; Recon: 3.2929; KL: 5.0793; Grad_norm: 0.0000;
+Sample: "allows in runteldat the guy is a merchant dover"
+
+Iter-3000; Loss: 3.1527; Recon: 3.0664; KL: 8.6315; Grad_norm: 0.0000;
+Sample: "inventive and deserving of moonlight mile is that is just ."
+
+Iter-4000; Loss: 2.8370; Recon: 2.7107; KL: 6.9300; Grad_norm: 0.0000;
+Sample: "that offbeat , `` result is repeated ."
+
+Iter-5000; Loss: 2.7914; Recon: 2.6223; KL: 6.3900; Grad_norm: 0.0000;
+Sample: "schrader reaches 19 <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad> <pad>"
+
+Iter-6000; Loss: 2.6803; Recon: 2.5071; KL: 4.9920; Grad_norm: 0.0000;
+Sample: "surprises everyone will be sacrificed for adolescence to camera ."
+
+Iter-7000; Loss: 2.4623; Recon: 2.2622; KL: 4.6611; Grad_norm: 0.0000;
+Sample: "just never enthralling ."
+
+Iter-8000; Loss: 2.1789; Recon: 1.9663; KL: 4.1562; Grad_norm: 0.0000;
+Sample: "funny and didactic anonymous flick ."
+
+Iter-9000; Loss: 2.3613; Recon: 2.1545; KL: 3.4811; Grad_norm: 0.0000;
+Sample: "amazingly dopey ."
+
+Iter-10000; Loss: 2.1251; Recon: 1.9008; KL: 3.3155; Grad_norm: 0.0000;
+Sample: "seagal ran out this with the face of one aims to impress"
+
+Iter-11000; Loss: 2.0041; Recon: 1.7948; KL: 2.7586; Grad_norm: 0.0000;
+Sample: "what one of the movie is with a werewolf living instantly out '"
+
+Iter-12000; Loss: 2.3232; Recon: 2.0785; KL: 2.9101; Grad_norm: 0.0000;
+Sample: "these its most movies without the human picture ."
+
+Iter-13000; Loss: 2.0999; Recon: 1.9064; KL: 2.0954; Grad_norm: 0.0000;
+Sample: "japanese director hoffman with most flamboyant most resonant performance ."
+
+Iter-14000; Loss: 2.0261; Recon: 1.8116; KL: 2.1324; Grad_norm: 0.0000;
+Sample: "this is one resurrection a masterpiece ."
+
+Iter-15000; Loss: 2.2877; Recon: 2.0841; KL: 1.8713; Grad_norm: 0.0000;
+Sample: "a sharp satire in extravagant promise by throw surprise after foster child ."
+
+Iter-16000; Loss: 2.4875; Recon: 2.3038; KL: 1.5696; Grad_norm: 0.0000;
+Sample: "an ambitious feature - length ."
+
+Iter-17000; Loss: 2.2081; Recon: 2.0501; KL: 1.2614; Grad_norm: 0.0000;
+Sample: "painful will pile will pack any saving credibility ."
+
+Iter-18000; Loss: 1.8288; Recon: 1.6782; KL: 1.1282; Grad_norm: 0.0000;
+Sample: "exciting , witty and rewarding ."
+
+Iter-19000; Loss: 1.9480; Recon: 1.8397; KL: 0.7638; Grad_norm: 0.0000;
+Sample: "on work ."

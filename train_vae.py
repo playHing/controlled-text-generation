@@ -78,7 +78,7 @@ def main():
             sample_sent = dataset.idxs2sentence(sample_idxs)
 
             print('Iter-{}; Loss: {:.4f}; Recon: {:.4f}; KL: {:.4f}; Grad_norm: {:.4f};'
-                  .format(it, loss.data[0], recon_loss.data[0], kl_loss.data[0], grad_norm))
+                  .format(it, loss.data.item(), recon_loss.data.item(), kl_loss.data.item(), grad_norm))
 
             print('Sample: "{}"'.format(sample_sent))
             print()

@@ -1,0 +1,215 @@
+$ python train_discriminator.py --save
+The `device` argument should be set by using `torch.device` or passing a string as an argument. This behavior will be deprecated soon and currently defaults to cpu.
+The `device` argument should be set by using `torch.device` or passing a string as an argument. This behavior will be deprecated soon and currently defaults to cpu.
+The `device` argument should be set by using `torch.device` or passing a string as an argument. This behavior will be deprecated soon and currently defaults to cpu.
+torch/nn/modules/rnn.py:46: UserWarning: dropout option adds dropout after all but last recurrent layer, so non-zero dropout expects num_layers greater than 1, but got dropout=0.3 and num_layers=1
+  "num_layers={}".format(dropout, num_layers))
+  0%|                                                                                                                                                                                                                                              | 0/5000 [00:00<?, ?it/s]train_discriminator.py:102: UserWarning: torch.nn.utils.clip_grad_norm is now deprecated in favor of torch.nn.utils.clip_grad_norm_.
+  grad_norm = torch.nn.utils.clip_grad_norm(model.discriminator_params, 5)
+torch/nn/_reduction.py:49: UserWarning: size_average and reduce args will be deprecated, please use reduction='mean' instead.
+  warnings.warn(warning.format(ret))
+train_discriminator.py:123: UserWarning: torch.nn.utils.clip_grad_norm is now deprecated in favor of torch.nn.utils.clip_grad_norm_.
+  grad_norm = torch.nn.utils.clip_grad_norm(model.decoder_params, 5)
+train_discriminator.py:133: UserWarning: torch.nn.utils.clip_grad_norm is now deprecated in favor of torch.nn.utils.clip_grad_norm_.
+  grad_norm = torch.nn.utils.clip_grad_norm(model.encoder_params, 5)
+Iter-0; loss_D: 0.7214; loss_G: 2.0215
+c = positive
+Sample: "hey , happy touching opera and inviting sizzle ."
+
+  2%|████▌                                                                                                                                                                                                                               | 100/5000 [01:03<52:32,  1.55it/s]Iter-100; loss_D: 0.7029; loss_G: 2.3464
+c = positive
+Sample: "it drowns in goldmember is surprisingly as annoying ."
+
+  4%|█████████                                                                                                                                                                                                                           | 200/5000 [02:07<50:32,  1.58it/s]Iter-200; loss_D: 0.6215; loss_G: 1.9568
+c = negative
+Sample: "manages to love most ardent fans ."
+
+  6%|█████████████▋                                                                                                                                                                                                                      | 300/5000 [03:09<49:10,  1.59it/s]Iter-300; loss_D: 0.6163; loss_G: 2.4544
+c = negative
+Sample: "the result is skill both to the balance to enjoy the movie is smart ."
+
+  8%|██████████████████▏                                                                                                                                                                                                                 | 400/5000 [04:13<51:23,  1.49it/s]Iter-400; loss_D: 0.7109; loss_G: 2.6984
+c = negative
+Sample: "too slick and manufactured to claim street credibility ."
+
+ 10%|██████████████████████▊                                                                                                                                                                                                             | 500/5000 [05:17<47:41,  1.57it/s]Iter-500; loss_D: 0.3809; loss_G: 2.0175
+c = negative
+Sample: "even too eager to the myth ."
+
+ 12%|███████████████████████████▎                                                                                                                                                                                                        | 600/5000 [06:21<46:37,  1.57it/s]Iter-600; loss_D: 0.4393; loss_G: 2.2815
+c = negative
+Sample: "the movie is way at its clever dialogue and luckiest stroke ."
+
+ 14%|███████████████████████████████▉                                                                                                                                                                                                    | 700/5000 [07:24<44:52,  1.60it/s]Iter-700; loss_D: 0.4438; loss_G: 2.3723
+c = negative
+Sample: "the best of pluto nash is widely startled when it is n't ."
+
+ 16%|████████████████████████████████████▍                                                                                                                                                                                               | 800/5000 [08:26<43:49,  1.60it/s]Iter-800; loss_D: 0.4366; loss_G: 2.3890
+c = positive
+Sample: "and children , touching , quirky , and plain stupid ."
+
+ 18%|█████████████████████████████████████████                                                                                                                                                                                           | 900/5000 [09:29<43:15,  1.58it/s]Iter-900; loss_D: 0.3173; loss_G: 2.1675
+c = negative
+Sample: "it 's not in a great party ."
+
+ 20%|█████████████████████████████████████████████▍                                                                                                                                                                                     | 1000/5000 [10:33<34:40,  1.92it/s]Iter-1000; loss_D: 0.3176; loss_G: 2.1997
+c = negative
+Sample: "been an veteran cutter , sylvie testud is icily brilliant ."
+
+ 22%|█████████████████████████████████████████████████▉                                                                                                                                                                                 | 1100/5000 [11:35<40:28,  1.61it/s]Iter-1100; loss_D: 0.3399; loss_G: 2.5743
+c = negative
+Sample: "frida that score , if you missed tv with no public talky ? '"
+
+ 24%|██████████████████████████████████████████████████████▍                                                                                                                                                                            | 1200/5000 [12:38<39:39,  1.60it/s]Iter-1200; loss_D: 0.4337; loss_G: 2.2302
+c = negative
+Sample: "drumline ably captures the complicated relationships slack direction ."
+
+ 26%|███████████████████████████████████████████████████████████                                                                                                                                                                        | 1300/5000 [13:40<38:30,  1.60it/s]Iter-1300; loss_D: 0.3879; loss_G: 2.2585
+c = negative
+Sample: "it 's mostly real idea , but it 's good intentions"
+
+ 28%|███████████████████████████████████████████████████████████████▌                                                                                                                                                                   | 1400/5000 [14:43<37:50,  1.59it/s]Iter-1400; loss_D: 0.3556; loss_G: 2.1955
+c = positive
+Sample: "i unlikable . 1 is as it 's direction ."
+
+ 30%|████████████████████████████████████████████████████████████████████                                                                                                                                                               | 1500/5000 [15:45<36:31,  1.60it/s]Iter-1500; loss_D: 0.3339; loss_G: 1.8147
+c = positive
+Sample: "she at someone , stop eric schaeffer next to enjoy the dialogue ."
+
+ 32%|████████████████████████████████████████████████████████████████████████▋                                                                                                                                                          | 1600/5000 [16:47<35:26,  1.60it/s]Iter-1600; loss_D: 0.3246; loss_G: 2.2176
+c = negative
+Sample: "every thing is a great , gritty , violent and comedy ."
+
+ 34%|█████████████████████████████████████████████████████████████████████████████▏                                                                                                                                                     | 1700/5000 [17:50<34:29,  1.59it/s]Iter-1700; loss_D: 0.3341; loss_G: 2.4255
+c = positive
+Sample: "it is philosophy illustrated with appropriate ferocity and thoughtfulness ."
+
+ 36%|█████████████████████████████████████████████████████████████████████████████████▋                                                                                                                                                 | 1800/5000 [18:52<33:16,  1.60it/s]Iter-1800; loss_D: 0.3206; loss_G: 2.1707
+c = negative
+Sample: "it 's no fun what it has much one of this time ."
+
+ 38%|██████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                            | 1900/5000 [19:54<32:20,  1.60it/s]Iter-1900; loss_D: 0.3260; loss_G: 2.1246
+c = positive
+Sample: "one of this result is twice as fresh , it is n't"
+
+ 40%|██████████████████████████████████████████████████████████████████████████████████████████▊                                                                                                                                        | 2000/5000 [20:56<28:31,  1.75it/s]Iter-2000; loss_D: 0.1487; loss_G: 2.2354
+c = positive
+Sample: "i do not to mention for a step stinker ."
+
+ 42%|███████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                                                                   | 2100/5000 [21:59<30:00,  1.61it/s]Iter-2100; loss_D: 0.3280; loss_G: 2.1260
+c = negative
+Sample: "... begins on another sleaze equivalent of a many - director peter novel ."
+
+ 44%|███████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                                               | 2200/5000 [23:01<29:03,  1.61it/s]Iter-2200; loss_D: 0.2562; loss_G: 2.2936
+c = positive
+Sample: "that result , a specifically urban sense sense of menacing atmosphere ."
+
+ 46%|████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                                                                                          | 2300/5000 [24:03<27:48,  1.62it/s]Iter-2300; loss_D: 0.2557; loss_G: 2.4346
+c = negative
+Sample: "by a wonderfully loopy tale of love story and love the feature length ."
+
+ 48%|████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                                                                      | 2400/5000 [25:05<27:08,  1.60it/s]Iter-2400; loss_D: 0.1706; loss_G: 2.4032
+c = positive
+Sample: "a humor dramatic poem ."
+
+ 50%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                                                 | 2500/5000 [26:07<25:52,  1.61it/s]Iter-2500; loss_D: 0.2310; loss_G: 1.9466
+c = negative
+Sample: "sadly , revelatory nor what as why are work of the animal thing are frequently"
+
+ 52%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                                                             | 2600/5000 [27:09<24:51,  1.61it/s]Iter-2600; loss_D: 0.2353; loss_G: 2.1032
+c = negative
+Sample: "it 's not really in terms , and all means very charming ."
+
+ 54%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                                                                        | 2700/5000 [28:11<23:54,  1.60it/s]Iter-2700; loss_D: 0.1808; loss_G: 1.7891
+c = negative
+Sample: "average average , exactly if thing is at a sick and inviting , participatory inspired"
+
+ 56%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                                                                    | 2800/5000 [29:14<22:50,  1.61it/s]Iter-2800; loss_D: 0.2998; loss_G: 2.3789
+c = negative
+Sample: "you watch for that nothing because you in its seriousness and quality ."
+
+ 58%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                               | 2900/5000 [30:16<21:50,  1.60it/s]Iter-2900; loss_D: 0.1902; loss_G: 2.3134
+c = negative
+Sample: "it 's uninteresting , without visit as undisputed is doa"
+
+ 60%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                                                                          | 3000/5000 [31:18<20:45,  1.61it/s]Iter-3000; loss_D: 0.2028; loss_G: 1.7947
+c = negative
+Sample: "it looks the worst film since i ' hearts ."
+
+ 62%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                                                                      | 3100/5000 [32:20<19:46,  1.60it/s]Iter-3100; loss_D: 0.2363; loss_G: 2.2060
+c = negative
+Sample: "boring and even even already wearisome ."
+
+ 64%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                                 | 3200/5000 [33:22<18:41,  1.60it/s]Iter-3200; loss_D: 0.1660; loss_G: 2.3785
+c = positive
+Sample: "we do n't help in the way that this movie ?"
+
+ 66%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                                                                             | 3300/5000 [34:24<17:39,  1.60it/s]Iter-3300; loss_D: 0.1876; loss_G: 2.1790
+c = positive
+Sample: "a prison comic gem ... strains a really in familiarity ."
+
+ 68%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                                                                        | 3400/5000 [35:27<16:34,  1.61it/s]Iter-3400; loss_D: 0.2493; loss_G: 2.0514
+c = negative
+Sample: "do i liked it was a limb ."
+
+ 70%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                                    | 3500/5000 [36:29<14:12,  1.76it/s]Iter-3500; loss_D: 0.2712; loss_G: 2.3007
+c = negative
+Sample: "it criticism to make you buy the gorgeous film about i walked out ."
+
+ 72%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍                                                               | 3600/5000 [37:31<14:40,  1.59it/s]Iter-3600; loss_D: 0.1463; loss_G: 2.0934
+c = negative
+Sample: "but i do n't help but it is n't interesting in my wayne ."
+
+ 74%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉                                                           | 3700/5000 [38:33<13:31,  1.60it/s]Iter-3700; loss_D: 0.2463; loss_G: 2.2808
+c = positive
+Sample: "there 's messy , truckzilla , surface a affection feeling ."
+
+ 76%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                                      | 3800/5000 [39:35<12:26,  1.61it/s]Iter-3800; loss_D: 0.2916; loss_G: 1.9294
+c = negative
+Sample: "it is denying the phantom menace to this movie is really ."
+
+ 78%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████                                                  | 3900/5000 [40:37<11:15,  1.63it/s]Iter-3900; loss_D: 0.2244; loss_G: 1.8862
+c = positive
+Sample: "it 's petty thievery a filmmaker 's updating 's novel ."
+
+ 80%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▌                                             | 4000/5000 [41:39<10:17,  1.62it/s]Iter-4000; loss_D: 0.1710; loss_G: 2.1631
+c = positive
+Sample: "there is with a glossy melodrama with a radiant , rapt spell"
+
+ 82%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                                        | 4100/5000 [42:42<09:23,  1.60it/s]Iter-4100; loss_D: 0.1723; loss_G: 2.4128
+c = negative
+Sample: "it it 's a denying this movie in in depth of the surprise ."
+
+ 84%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▋                                    | 4200/5000 [43:44<08:21,  1.60it/s]Iter-4200; loss_D: 0.3493; loss_G: 2.2268
+c = positive
+Sample: "it 's a denying a film about grace ; twenty - stoppingly flicks to tediously"
+
+ 86%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▏                               | 4300/5000 [44:46<07:17,  1.60it/s]Iter-4300; loss_D: 0.1854; loss_G: 2.1407
+c = positive
+Sample: "it is standard lives bore ."
+
+ 88%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                           | 4400/5000 [45:48<06:10,  1.62it/s]Iter-4400; loss_D: 0.2129; loss_G: 1.8618
+c = negative
+Sample: "it hates its own action ."
+
+ 90%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▎                      | 4500/5000 [46:50<05:11,  1.61it/s]Iter-4500; loss_D: 0.2148; loss_G: 1.9533
+c = positive
+Sample: "this surprises ."
+
+ 92%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▊                  | 4600/5000 [47:53<04:07,  1.62it/s]Iter-4600; loss_D: 0.2766; loss_G: 2.0306
+c = negative
+Sample: "hollywood ending is about as dramatic , humorous , but oddly budget ."
+
+ 94%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍             | 4700/5000 [48:55<03:06,  1.61it/s]Iter-4700; loss_D: 0.2027; loss_G: 2.2363
+c = positive
+Sample: "splendidly cast is spot on purpose is an sadly and honestly ."
+
+ 96%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉         | 4800/5000 [49:57<02:03,  1.62it/s]Iter-4800; loss_D: 0.1979; loss_G: 2.2956
+c = negative
+Sample: "sadly , the performances share of life ."
+
+ 98%|██████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▍    | 4900/5000 [51:00<01:02,  1.61it/s]Iter-4900; loss_D: 0.1565; loss_G: 2.2451
+c = positive
+Sample: "weighty and girardot give problems openly and honestly ."
+
+100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 5000/5000 [52:02<00:00,  1.60it/s]

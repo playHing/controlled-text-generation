@@ -114,3 +114,6 @@ ENV/
 .vscode
 .data
 .vector_cache
+
+data/
+.idea/

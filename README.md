@@ -21,3 +21,6 @@ This work is for University of Bonn's NLP Lab project on Winter Semester 2017/20
 1. Hu, Zhiting, et al. "Toward controlled generation of text." International Conference on Machine Learning. 2017. [[pdf](http://proceedings.mlr.press/v70/hu17e/hu17e.pdf)]
 2. Bowman, Samuel R., et al. "Generating sentences from a continuous space." arXiv preprint arXiv:1511.06349 (2015). [[pdf](https://arxiv.org/pdf/1511.06349.pdf?utm_campaign=Revue%20newsletter&utm_medium=Newsletter&utm_source=revue)]
 3. Kim, Yoon. "Convolutional neural networks for sentence classification." arXiv preprint arXiv:1408.5882 (2014). [[pdf](https://arxiv.org/pdf/1408.5882)]
+
+IMDB: http://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz
+SST: http://nlp.stanford.edu/sentiment/trainDevTestTrees_PTB.zip
