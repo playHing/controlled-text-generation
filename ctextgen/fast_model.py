@@ -13,7 +13,8 @@ class RNN_VAE(nn.Module):
     3. Kim, Yoon. "Convolutional neural networks for sentence classification." arXiv preprint arXiv:1408.5882 (2014).
     """
 
-    def __init__(self, n_vocab, h_dim, z_dim, c_dim, p_word_dropout=0.3, unk_idx=0, pad_idx=1, start_idx=2, eos_idx=3, max_sent_len=15, pretrained_embeddings=None, freeze_embeddings=False, gpu=False):
+    def __init__(self, n_vocab, batch_size, h_dim, z_dim, c_dim, p_word_dropout=0.3, unk_idx=0, pad_idx=1, start_idx=2,
+                 eos_idx=3, max_sent_len=15, pretrained_embeddings=None, freeze_embeddings=False, gpu=False):
         super(RNN_VAE, self).__init__()
 
         self.UNK_IDX = unk_idx
@@ -23,6 +24,7 @@ class RNN_VAE(nn.Module):
         self.MAX_SENT_LEN = max_sent_len
 
         self.n_vocab = n_vocab
+        self.batch_size = batch_size
         self.h_dim = h_dim
         self.z_dim = z_dim
         self.c_dim = c_dim
@@ -50,14 +52,14 @@ class RNN_VAE(nn.Module):
         Encoder is GRU with FC layers connected to last hidden unit
         """
         self.encoder = nn.GRU(self.emb_dim, h_dim)
-        self.q_mu = nn.Linear(h_dim, z_dim)
-        self.q_logvar = nn.Linear(h_dim, z_dim)
+        self.q_mu = nn.Linear(h_dim, z_dim)  # mean
+        self.q_logvar = nn.Linear(h_dim, z_dim)  # variance
 
         """
         Decoder is GRU with `z` and `c` appended at its inputs
         """
-        self.decoder = nn.GRU(self.emb_dim+z_dim+c_dim, z_dim+c_dim, dropout=0.3)
-        self.decoder_fc = nn.Linear(z_dim+c_dim, n_vocab)
+        self.decoder = nn.GRU(self.emb_dim + z_dim + c_dim, z_dim + c_dim, dropout=0.3)
+        self.decoder_fc = nn.Linear(z_dim + c_dim, n_vocab)
 
         """
         Discriminator is CNN as in Kim, 2014
@@ -68,7 +70,7 @@ class RNN_VAE(nn.Module):
 
         self.disc_fc = nn.Sequential(
             nn.Dropout(0.5),
-            nn.Linear(300, 2)
+            nn.Linear(300, self.c_dim)
         )
 
         self.discriminator = nn.ModuleList([
@@ -111,7 +113,7 @@ class RNN_VAE(nn.Module):
         """
         Inputs is embeddings of: seq_len x mbsize x emb_dim
         """
-        _, h = self.encoder(inputs, None)
+        _, h = self.encoder(inputs, None)  # h is the last output of GRU
 
         # Forward to latent
         h = h.view(-1, self.h_dim)
@@ -126,22 +128,22 @@ class RNN_VAE(nn.Module):
         """
         eps = Variable(torch.randn(self.z_dim))
         eps = eps.cuda() if self.gpu else eps
-        return mu + torch.exp(logvar/2) * eps
+        return mu + torch.exp(logvar / 2) * eps
 
-    def sample_z_prior(self, mbsize):
+    def sample_z_prior(self, size=1):
         """
         Sample z ~ p(z) = N(0, I)
         """
-        z = Variable(torch.randn(mbsize, self.z_dim))
+        z = Variable(torch.randn(size, self.z_dim))
         z = z.cuda() if self.gpu else z
         return z
 
-    def sample_c_prior(self, mbsize):
+    def sample_c_prior(self, size=1):
         """
         Sample c ~ p(c) = Cat([0.5, 0.5])
         """
         c = Variable(
-            torch.from_numpy(np.random.multinomial(1, [0.5, 0.5], mbsize).astype('float32'))
+            torch.from_numpy(np.random.multinomial(1, [0.5, 0.5], size).astype('float32'))
         )
         c = c.cuda() if self.gpu else c
         return c
@@ -161,11 +163,11 @@ class RNN_VAE(nn.Module):
         inputs_emb = torch.cat([inputs_emb, init_h.repeat(seq_len, 1, 1)], 2)
 
         outputs, _ = self.decoder(inputs_emb, init_h)
-        seq_len, mbsize, _ = outputs.size()
+        seq_len, _, _ = outputs.size()
 
-        outputs = outputs.view(seq_len*mbsize, -1)
+        outputs = outputs.view(seq_len * self.batch_size, -1)
         y = self.decoder_fc(outputs)
-        y = y.view(seq_len, mbsize, self.n_vocab)
+        y = y.view(seq_len, self.batch_size, self.n_vocab)
 
         return y
 
@@ -211,25 +213,25 @@ class RNN_VAE(nn.Module):
         """
         self.train()
 
-        mbsize = sentence.size(1)
+        sentence = torch.t(sentence)
 
         # sentence: '<start> I want to fly <eos>'
         # enc_inputs: '<start> I want to fly <eos>'
         # dec_inputs: '<start> I want to fly <eos>'
         # dec_targets: 'I want to fly <eos> <pad>'
-        pad_words = Variable(torch.LongTensor([self.PAD_IDX])).repeat(1, mbsize)
+        pad_words = Variable(torch.LongTensor([self.PAD_IDX])).repeat(1, self.batch_size)
         pad_words = pad_words.cuda() if self.gpu else pad_words
 
         enc_inputs = sentence
         dec_inputs = sentence
-        dec_targets = torch.cat([sentence[1:], pad_words], dim=0)
+        dec_targets = torch.cat([sentence[1:], pad_words], dim=0)  # remove the <start> tag and add <pad> at the end
 
         # Encoder: sentence -> z
         mu, logvar = self.forward_encoder(enc_inputs)
         z = self.sample_z(mu, logvar)
 
         if use_c_prior:
-            c = self.sample_c_prior(mbsize)
+            c = self.sample_c_prior(self.batch_size)
         else:
             c = self.forward_discriminator(sentence.transpose(0, 1))
 
@@ -239,27 +241,27 @@ class RNN_VAE(nn.Module):
         recon_loss = F.cross_entropy(
             y.view(-1, self.n_vocab), dec_targets.view(-1), size_average=True
         )
-        kl_loss = torch.mean(0.5 * torch.sum(torch.exp(logvar) + mu**2 - 1 - logvar, 1))
+        kl_loss = torch.mean(0.5 * torch.sum(torch.exp(logvar) + mu ** 2 - 1 - logvar, 1))
 
         return recon_loss, kl_loss
 
-    def generate_sentences(self, batch_size):
+    def generate_sentences(self):
         """
         Generate sentences and corresponding z of (batch_size x max_sent_len)
         """
         samples = []
         cs = []
 
-        for _ in range(batch_size):
+        for _ in range(self.batch_size):
             z = self.sample_z_prior(1)
             c = self.sample_c_prior(1)
             samples.append(self.sample_sentence(z, c, raw=True))
             cs.append(c.long())
 
-        X_gen = torch.cat(samples, dim=0)
+        x_gen = torch.cat(samples, dim=0)
         c_gen = torch.cat(cs, dim=0)
 
-        return X_gen, c_gen
+        return x_gen, c_gen
 
     def sample_sentence(self, z, c, raw=False, temp=1):
         """
@@ -292,7 +294,7 @@ class RNN_VAE(nn.Module):
 
             output, h = self.decoder(emb, h)
             y = self.decoder_fc(output).view(-1)
-            y = F.softmax(y/temp, dim=0)
+            y = F.softmax(y / temp, dim=0)
 
             idx = torch.multinomial(y, 1)
 
@@ -315,7 +317,7 @@ class RNN_VAE(nn.Module):
         else:
             return outputs
 
-    def generate_soft_embed(self, mbsize, temp=1):
+    def generate_soft_embed(self, temp=1):
         """
         Generate soft embeddings of (mbsize x emb_dim) along with target z
         and c for each row (mbsize x {z_dim, c_dim})
@@ -324,7 +326,7 @@ class RNN_VAE(nn.Module):
         targets_c = []
         targets_z = []
 
-        for _ in range(mbsize):
+        for _ in range(self.batch_size):
             z = self.sample_z_prior(1)
             c = self.sample_c_prior(1)
 
@@ -332,11 +334,11 @@ class RNN_VAE(nn.Module):
             targets_z.append(z)
             targets_c.append(c)
 
-        X_gen = torch.cat(samples, dim=0)
+        x_gen = torch.cat(samples, dim=0)
         targets_z = torch.cat(targets_z, dim=0)
         _, targets_c = torch.cat(targets_c, dim=0).max(dim=1)
 
-        return X_gen, targets_z, targets_c
+        return x_gen, targets_z, targets_c
 
     def sample_soft_embed(self, z, c, temp=1):
         """
@@ -361,7 +363,7 @@ class RNN_VAE(nn.Module):
 
         outputs = [self.word_emb(word).view(1, -1)]
 
-        for i in range(self.MAX_SENT_LEN):
+        for _ in range(self.MAX_SENT_LEN):
             output, h = self.decoder(emb, h)
             o = self.decoder_fc(output).view(-1)
 
@@ -397,10 +399,7 @@ class RNN_VAE(nn.Module):
             data = inputs.clone()
 
         # Sample masks: elems with val 1 will be set to <unk>
-        mask = torch.from_numpy(
-            np.random.binomial(1, p=self.p_word_dropout, size=tuple(data.size()))
-                     .astype('uint8')
-        )
+        mask = torch.from_numpy(np.random.binomial(1, p=self.p_word_dropout, size=tuple(data.size())).astype('uint8'))
 
         if self.gpu:
             mask = mask.cuda()
