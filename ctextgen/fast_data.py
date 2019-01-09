@@ -5,6 +5,7 @@ from fastNLP import DataSet, Instance, Vocabulary
 from fastNLP.core.batch import Batch
 from fastNLP.core.sampler import SequentialSampler
 
+
 class FastData:
 
     def __init__(self, path=".data/yelp", dataset="yelp", batch_size=32):
@@ -22,7 +23,7 @@ class FastData:
 
             dataset.apply(lambda x: x['text'].lower(), new_field_name='text')
             dataset.apply(lambda x: ['<start>'] + x['text'].split() + ['<eos>'], new_field_name='words')
-            dataset.drop(lambda x: len(x['words']) > 1 + 15 + 1)
+            dataset.drop(lambda x: len(x['words']) > 17)
             dataset.apply(lambda x: x['words'] + ['<pad>'] * (17 - len(x['words'])), new_field_name='words')
             dataset.apply(lambda x: int(x['label']), new_field_name='label_seq', is_target=True)
 
@@ -45,8 +46,8 @@ class FastData:
 
     def next_batch(self):
         try:
-            return next(self.train_iter)
-        except StopAsyncIteration:
-            self.train_iter = iter(Batch(dataset=self.train_data, batch_size=self.batch_size, sampler=SequentialSampler()))
-            return next(self.train_iter)
-
+            _next_batch = next(self.train_iter)
+        except StopIteration:
+            self.train_iter = iter(
+                Batch(dataset=self.train_data, batch_size=self.batch_size, sampler=SequentialSampler()))
+            return self.next_batch()

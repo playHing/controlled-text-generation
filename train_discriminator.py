@@ -78,6 +78,8 @@ def main():
     trainer_G = optim.Adam(model.decoder_params, lr=lr)
     trainer_E = optim.Adam(model.encoder_params, lr=lr)
 
+    model.train()
+
     for it in tqdm(range(n_iter)):
         inputs, labels = dataset.next_batch(args.gpu)
 
