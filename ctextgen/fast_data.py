@@ -47,6 +47,9 @@ class FastData:
     def next_batch(self):
         try:
             _next_batch = next(self.train_iter)
+            if _next_batch[0]['word_seq'].shape[0] != self.batch_size:
+                raise StopIteration
+            return _next_batch
         except StopIteration:
             self.train_iter = iter(
                 Batch(dataset=self.train_data, batch_size=self.batch_size, sampler=SequentialSampler()))
