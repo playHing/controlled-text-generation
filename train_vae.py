@@ -9,11 +9,10 @@ import torch.optim as optim
 import numpy as np
 from torch.autograd import Variable
 
-from ctextgen.dataset import *
+from ctextgen.fast_data2 import *
 from ctextgen.model import RNN_VAE
 
 import argparse
-
 
 parser = argparse.ArgumentParser(
     description='Conditional Text Generation: Train VAE as in Bowman, 2016, with c ~ p(c)'
@@ -37,7 +36,7 @@ log_interval = 1000
 z_dim = h_dim
 c_dim = 2
 
-dataset = SST_Dataset()
+dataset = FastData2()
 
 model = RNN_VAE(
     dataset.n_vocab, h_dim, z_dim, c_dim, p_word_dropout=0.3,
@@ -56,9 +55,11 @@ def main():
     trainer = optim.Adam(model.vae_params, lr=lr)
 
     for it in range(n_iter):
-        inputs, labels = dataset.next_batch(args.gpu)
+        batch = dataset.next_batch()
+        inputs = batch[0]['word_seq']
+        # print(inputs)
 
-        recon_loss, kl_loss = model.forward(inputs)
+        recon_loss, kl_loss = model.forward(inputs.cuda())
         loss = recon_loss + kld_weight * kl_loss
 
         # Anneal kl_weight
@@ -75,7 +76,11 @@ def main():
             c = model.sample_c_prior(1)
 
             sample_idxs = model.sample_sentence(z, c)
-            sample_sent = dataset.idxs2sentence(sample_idxs)
+            # print(sample_idxs)
+            # print(dataset.n_vocab)
+            # sample_sent = dataset.idxs2sentence(sample_idxs)
+            sample_sent = dataset.tensor2sentence(sample_idxs)
+            # print(sample_sent)
 
             print('Iter-{}; Loss: {:.4f}; Recon: {:.4f}; KL: {:.4f}; Grad_norm: {:.4f};'
                   .format(it, loss.data.item(), recon_loss.data.item(), kl_loss.data.item(), grad_norm))
