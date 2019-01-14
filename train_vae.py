@@ -9,10 +9,11 @@ import torch.optim as optim
 import numpy as np
 from torch.autograd import Variable
 
-from ctextgen.fast_data2 import *
+from ctextgen.dataset import *
 from ctextgen.model import RNN_VAE
 
 import argparse
+
 
 parser = argparse.ArgumentParser(
     description='Conditional Text Generation: Train VAE as in Bowman, 2016, with c ~ p(c)'
@@ -36,11 +37,11 @@ log_interval = 1000
 z_dim = h_dim
 c_dim = 2
 
-dataset = FastData2()
+dataset = SST_Dataset()
 
 model = RNN_VAE(
     dataset.n_vocab, h_dim, z_dim, c_dim, p_word_dropout=0.3,
-    pretrained_embeddings=dataset.get_vocab_vectors(), freeze_embeddings=False,
+    pretrained_embeddings=None, freeze_embeddings=False,
     gpu=args.gpu
 )
 
@@ -55,11 +56,9 @@ def main():
     trainer = optim.Adam(model.vae_params, lr=lr)
 
     for it in range(n_iter):
-        batch = dataset.next_batch()
-        inputs = batch[0]['word_seq']
-        # print(inputs)
+        inputs, labels = dataset.next_batch(args.gpu)
 
-        recon_loss, kl_loss = model.forward(inputs.cuda())
+        recon_loss, kl_loss = model.forward(inputs)
         loss = recon_loss + kld_weight * kl_loss
 
         # Anneal kl_weight
@@ -67,7 +66,7 @@ def main():
             kld_weight += kld_inc
 
         loss.backward()
-        grad_norm = torch.nn.utils.clip_grad_norm(model.vae_params, 5)
+        grad_norm = 0. # torch.nn.utils.clip_grad_norm(model.vae_params, 5)
         trainer.step()
         trainer.zero_grad()
 
@@ -76,11 +75,7 @@ def main():
             c = model.sample_c_prior(1)
 
             sample_idxs = model.sample_sentence(z, c)
-            # print(sample_idxs)
-            # print(dataset.n_vocab)
-            # sample_sent = dataset.idxs2sentence(sample_idxs)
-            sample_sent = dataset.tensor2sentence(sample_idxs)
-            # print(sample_sent)
+            sample_sent = dataset.idxs2sentence(sample_idxs)
 
             print('Iter-{}; Loss: {:.4f}; Recon: {:.4f}; KL: {:.4f}; Grad_norm: {:.4f};'
                   .format(it, loss.data.item(), recon_loss.data.item(), kl_loss.data.item(), grad_norm))

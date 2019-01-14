@@ -46,12 +46,12 @@ class Encoder(nn.Module):
         self.q_log_var = nn.Linear(cf.h_dim, cf.z_dim)      # variance
         self.cf = cf
 
-    def forward(self, input: torch.Tensor):
+    def forward(self, inputs: torch.Tensor):
         """
-        :param input: [batch_size, seq_len, emb_dim]
+        :param inputs: [batch_size, seq_len, emb_dim]
         :return: mu, log_var, [batch_size, z_dim]
         """
-        _, h = self.encoder(input.transpose(0, 1), None)                   # h is the last output of GRU
+        _, h = self.encoder(inputs, None)                   # h is the last output of GRU
 
         # Forward to latent
         h = h.view(-1, self.cf.h_dim)
@@ -65,7 +65,7 @@ class Decoder(nn.Module):
     def __init__(self, word_emb: WordEmbedding, cf: FastConfig):
         super(Decoder, self).__init__()
         self.word_emb = word_emb
-        self.decoder = nn.GRU(cf.emb_dim + cf.z_dim + cf.c_dim, cf.z_dim + cf.c_dim)
+        self.decoder = nn.GRU(cf.emb_dim + cf.z_dim + cf.c_dim, cf.z_dim + cf.c_dim, dropout=0.3)
         self.decoder_fc = nn.Linear(cf.z_dim + cf.c_dim, cf.n_vocab)
         self.cf = cf
 
@@ -80,18 +80,18 @@ class Decoder(nn.Module):
         dec_inputs = self.word_dropout(word_seq)
 
         # Forward
-        seq_len = dec_inputs.size(1)
+        seq_len = dec_inputs.size(0)
         init_h = torch.cat([z.unsqueeze(0), c.unsqueeze(0)], dim=2)             # [batch_size, z_dim+c_dim]
         inputs_emb = self.word_emb(dec_inputs)                                  # [batch_size, seq_len, emb_dim]
-        init_h_repeat = init_h.repeat(seq_len, 1, 1).transpose(0, 1)
+        init_h_repeat = init_h.repeat(seq_len, 1, 1)
         inputs_emb = torch.cat([inputs_emb, init_h_repeat], 2)
 
-        outputs, _ = self.decoder(inputs_emb.transpose(0, 1), init_h)
+        outputs, _ = self.decoder(inputs_emb, init_h)
         seq_len, batch_size, _ = outputs.size()
 
-        outputs = outputs.view(batch_size * seq_len, -1)
+        outputs = outputs.view(seq_len * batch_size, -1)
         y = self.decoder_fc(outputs)
-        y = y.view(batch_size, seq_len, self.cf.n_vocab)
+        y = y.view(seq_len, batch_size, self.cf.n_vocab)
 
         return y
 
@@ -164,7 +164,20 @@ class VariationalAE(nn.Module):
         self.decoder = decoder
         self.cf = cf
 
-    def forward(self, word_seq):
+        params = chain(
+            self.word_emb.embedding.parameters(),
+            self.encoder.encoder.parameters(),
+            self.encoder.q_mu.parameters(),
+            self.encoder.q_log_var.parameters(),
+            self.decoder.decoder.parameters(),
+            self.decoder.decoder_fc.parameters()
+        )
+        self.params = filter(lambda p: p.requires_grad, params)
+
+    def forward(self, word_seq: torch.Tensor):
+        self.train()
+        word_seq.t_()       # plz be aware of the shape of the tensors
+
         embed = self.word_emb(word_seq)
         mu, log_var = self.encoder(embed)
         z = sample_z(mu, log_var)
@@ -175,8 +188,9 @@ class VariationalAE(nn.Module):
     @staticmethod
     def loss(pred, mu, log_var, dec_target):
         n_vocab = pred.shape[-1]
+        dec_target.t_()
         recon_loss = F.cross_entropy(
-            pred.view(-1, n_vocab), dec_target.view(-1), reduction='mean'
+            pred.view(-1, n_vocab), dec_target.reshape(-1), reduction='mean'
         )
         kl_loss = torch.mean(0.5 * torch.sum(torch.exp(log_var) + mu ** 2 - 1 - log_var, 1))
 
