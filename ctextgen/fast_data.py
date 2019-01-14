@@ -1,6 +1,8 @@
 import os
 import io
 
+from torchtext import datasets, data
+
 from fastNLP import DataSet, Instance, Vocabulary
 from fastNLP.core.batch import Batch
 from fastNLP.core.sampler import SequentialSampler
@@ -8,28 +10,36 @@ from fastNLP.core.sampler import SequentialSampler
 
 class FastData:
 
-    def __init__(self, path=".data/yelp", data_type="yelp",
-                 batch_size=32, split_ratio=0.1, min_freq=2):
+    def __init__(self, path='.data/sst/trees', data_type='sst',
+                 batch_size=32, split_ratio=0.1, seq_len=15, min_freq=2):
 
-        if data_type == "yelp":
-            data_set = DataSet()
-
+        data_set = DataSet()
+        if data_type == 'yelp':
             for db_set in ['train']:
                 text_file = os.path.join(path, 'sentiment.' + db_set + '.text')
                 label_file = os.path.join(path, 'sentiment.' + db_set + '.labels')
-                TEST = 0
+
                 with io.open(text_file, 'r', encoding="utf-8") as tf, io.open(label_file, 'r', encoding="utf-8") as lf:
                     for text in tf:
                         label = lf.readline()
                         data_set.append(Instance(text=text, label=label))
-                        if TEST > 1000:
-                            break
-                        else:
-                            TEST += 1
 
-        data_set.apply(lambda x: ['<start>'] + x['text'].lower().split() + ['<eos>'], new_field_name='words')
-        data_set.drop(lambda x: len(x['words']) > 17)
-        data_set.apply(lambda x: x['words'] + ['<pad>'] * (17 - len(x['words'])), new_field_name='words')
+            data_set.apply(lambda x: ['<start>'] + x['text'].lower().split() + ['<eos>'], new_field_name='words')
+            data_set.drop(lambda x: len(x['words']) > seq_len + 2)
+
+        elif data_type == 'sst':
+            text = data.Field(init_token='<start>', eos_token='<eos>', lower=True, tokenize='spacy', fix_length=16)
+            label = data.Field(sequential=False, unk_token='<unk>')
+            filter = lambda ex: len(ex.text) <= seq_len and ex.label != 'neutral'
+            sst_train = datasets.SST(os.path.join(path, 'train.txt'), text, label, filter_pred=filter)
+            sst_dev = datasets.SST(os.path.join(path, 'dev.txt'), text, label, filter_pred=filter)
+            sst_test = datasets.SST(os.path.join(path, 'test.txt'), text, label, filter_pred=filter)
+            for ex in sst_train.examples + sst_dev.examples + sst_test.examples:
+                data_set.append(Instance(words=ex.text, label={'negative': 0, 'positive': 1}[ex.label]))
+
+            data_set.apply(lambda x: ['<start>'] + [w.lower() for w in x['words']] + ['<eos>'], new_field_name='words')
+
+        data_set.apply(lambda x: x['words'] + ['<pad>'] * (seq_len + 2 - len(x['words'])), new_field_name='words')
 
         _train_data, _ = data_set.split(split_ratio)
 
