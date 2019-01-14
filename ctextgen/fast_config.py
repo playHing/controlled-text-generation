@@ -5,7 +5,7 @@ class FastConfig:
                  max_sent_len=15, word_dropout_prob=0.3,
                  pre_trained_embeddings=None, freeze_embeddings=False, gpu=False):
         self.h_dim = h_dim
-        self.emb_dim = "to be set by WordEmbedding"
+        self.emb_dim = None     # to be set by WordEmbedding
         self.z_dim = z_dim
         self.c_dim = c_dim
         self.n_vocab = n_vocab
