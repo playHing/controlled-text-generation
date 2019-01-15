@@ -9,6 +9,7 @@ from .fast_config import FastConfig
 from fastNLP import models, modules
 
 
+@DeprecationWarning
 class WordEmbedding(nn.Module):
 
     def __init__(self, cf: FastConfig):
@@ -64,7 +65,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
 
-    def __init__(self, word_emb: WordEmbedding, cf: FastConfig):
+    def __init__(self, word_emb, cf: FastConfig):
         super(Decoder, self).__init__()
         self.word_emb = word_emb
         self.decoder = nn.GRU(cf.emb_dim + cf.z_dim + cf.c_dim, cf.z_dim + cf.c_dim)
@@ -153,7 +154,7 @@ class VariationalAE(nn.Module):
     # Annealing for KL term
     kld_weight = 0.05
 
-    def __init__(self, word_emb: WordEmbedding, encoder: Encoder,
+    def __init__(self, word_emb, encoder: Encoder,
                  decoder: Decoder, cf: FastConfig):
         super(VariationalAE, self).__init__()
         self.word_emb = word_emb
@@ -167,6 +168,13 @@ class VariationalAE(nn.Module):
         z = sample_z(mu, log_var)
         c = sample_c_prior(self.cf.c_dim, size=z.shape[0])
         y = self.decoder(word_seq, z, c)
+        return {'pred': y, 'mu': mu, 'log_var': log_var}
+
+    def forward_with_disc_pred(self, word_seq, disc_pred):
+        embed = self.word_emb(word_seq)
+        mu, log_var = self.encoder(embed)
+        z = sample_z(mu, log_var)
+        y = self.decoder(word_seq, z, disc_pred)
         return {'pred': y, 'mu': mu, 'log_var': log_var}
 
     @staticmethod

@@ -1,11 +1,11 @@
 class FastConfig:
 
-    def __init__(self, h_dim, z_dim, c_dim, n_vocab,
+    def __init__(self, emb_dim, h_dim, z_dim, c_dim, n_vocab,
                  unk_idx, pad_idx, start_idx, eos_idx,
                  max_sent_len=15, word_dropout_prob=0.3,
                  pre_trained_embeddings=None, freeze_embeddings=False, gpu=False):
+        self.emb_dim = emb_dim
         self.h_dim = h_dim
-        self.emb_dim = None     # to be set by WordEmbedding
         self.z_dim = z_dim
         self.c_dim = c_dim
         self.n_vocab = n_vocab
