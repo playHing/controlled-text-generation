@@ -19,7 +19,7 @@ class WordEmbedding(nn.Module):
         else:
             self.emb_dim = cf.pre_trained_embeddings.size(1)
             self.embedding = nn.Embedding(cf.n_vocab, self.emb_dim, cf.PAD_IDX)
-            self.embedding.weight.data.copy_(cf.pre_trained_embeddings)        # Set pre-trained embeddings
+            self.embedding.weight.data.copy_(cf.pre_trained_embeddings)  # Set pre-trained embeddings
             if cf.freeze_embeddings:
                 self.embedding.weight.requires_grad = False
 
@@ -28,8 +28,8 @@ class WordEmbedding(nn.Module):
 
     def forward(self, word_seq):
         """
-        :param word_seq: [batch_size, seq_len]
-        :return: [batch_size, seq_len, emb_dim]
+        :param word_seq: [seq_len, batch_size]
+        :return: [seq_len, batch_size, emb_dim]
         """
         return self.embedding(word_seq)
 
@@ -42,16 +42,16 @@ class Encoder(nn.Module):
         """
         super(Encoder, self).__init__()
         self.encoder = nn.GRU(cf.emb_dim, cf.h_dim)
-        self.q_mu = nn.Linear(cf.h_dim, cf.z_dim)           # mean
-        self.q_log_var = nn.Linear(cf.h_dim, cf.z_dim)      # variance
+        self.q_mu = nn.Linear(cf.h_dim, cf.z_dim)  # mean
+        self.q_log_var = nn.Linear(cf.h_dim, cf.z_dim)  # variance
         self.cf = cf
 
     def forward(self, inputs: torch.Tensor):
         """
-        :param inputs: [batch_size, seq_len, emb_dim]
+        :param inputs: [seq_len, batch_size, emb_dim]
         :return: mu, log_var, [batch_size, z_dim]
         """
-        _, h = self.encoder(inputs, None)                   # h is the last output of GRU
+        _, h = self.encoder(inputs, None)  # h is the last output of GRU
 
         # Forward to latent
         h = h.view(-1, self.cf.h_dim)
@@ -71,18 +71,18 @@ class Decoder(nn.Module):
 
     def forward(self, word_seq, z, c):
         """
-        :param word_seq: [batch_size, seq_len]
+        :param word_seq: [seq_len, batch_size]
         :param z: [batch_size, z_dim]
         :param c: [batch_size, c_dim]
-        :return: [batch_size, seq_len, n_vocab]
+        :return: [seq_len, batch_size, n_vocab]
         """
 
         dec_inputs = self.word_dropout(word_seq)
 
         # Forward
         seq_len = dec_inputs.size(0)
-        init_h = torch.cat([z.unsqueeze(0), c.unsqueeze(0)], dim=2)             # [batch_size, z_dim+c_dim]
-        inputs_emb = self.word_emb(dec_inputs)                                  # [batch_size, seq_len, emb_dim]
+        init_h = torch.cat([z.unsqueeze(0), c.unsqueeze(0)], dim=2)
+        inputs_emb = self.word_emb(dec_inputs)
         init_h_repeat = init_h.repeat(seq_len, 1, 1)
         inputs_emb = torch.cat([inputs_emb, init_h_repeat], 2)
 
@@ -106,7 +106,7 @@ class Decoder(nn.Module):
         mask = torch.from_numpy(
             np.random.binomial(1, p=self.cf.word_dropout_prob,
                                size=tuple(data.size())).astype('uint8')
-            )
+        )
 
         # Set to <unk>
         data[mask] = self.cf.UNK_IDX
@@ -140,13 +140,12 @@ def sample_c_prior(c_dim: int, size=1):
     assert c_dim > 0, 'c_dim must be > 0'
 
     c = Variable(
-        torch.from_numpy(np.random.multinomial(1, [1.0/c_dim] * c_dim, size).astype('float32'))
+        torch.from_numpy(np.random.multinomial(1, [1.0 / c_dim] * c_dim, size).astype('float32'))
     )
     return c
 
 
 class VariationalAE(nn.Module):
-
     # word-around
     # Annealing for KL term
     kld_start_inc = None
@@ -176,7 +175,7 @@ class VariationalAE(nn.Module):
 
     def forward(self, word_seq: torch.Tensor):
         self.train()
-        word_seq.t_()       # plz be aware of the shape of the tensors
+        word_seq.t_()
 
         embed = self.word_emb(word_seq)
         mu, log_var = self.encoder(embed)
@@ -188,7 +187,7 @@ class VariationalAE(nn.Module):
     @staticmethod
     def loss(pred, mu, log_var, dec_target):
         n_vocab = pred.shape[-1]
-        dec_target.t_()
+        dec_target.t_()  # plz be aware of the shape of the tensors
         recon_loss = F.cross_entropy(
             pred.view(-1, n_vocab), dec_target.reshape(-1), reduction='mean'
         )
