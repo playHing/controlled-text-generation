@@ -3,8 +3,8 @@ import math
 
 import torch
 import torch.optim as optim
-from ctextgen.fast_model import RNN_VAE
-from ctextgen.fast_data import FastData
+from depreciate.fast_model import RNN_VAE
+from fast_data import FastData
 import torch.nn.functional as F
 
 import argparse

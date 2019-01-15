@@ -2,9 +2,9 @@ import os
 import math
 
 import torch.optim as optim
-from ctextgen.fast_model_v2 import *
-from ctextgen.fast_data import FastData
-from ctextgen.fast_config import FastConfig
+from fast_model import *
+from fast_data import FastData
+from fast_config import FastConfig
 import torch.nn.functional as F
 
 from fastNLP.models import cnn_text_classification
@@ -40,7 +40,7 @@ vae = VariationalAE(word_emb, encoder, decoder, cf)
 
 
 def train_variational_ae():
-    n_epochs = 100
+    n_epochs = 500
 
     trainer = Trainer(
         train_data=fast_data.train_data,
@@ -104,7 +104,7 @@ def sample_sentence(z, c, raw=False, temp=1):
 
         output, h = decoder.decoder(emb, h)
         y = decoder.decoder_fc(output).view(-1)
-        y = F.softmax(y/temp, dim=0)
+        y = F.softmax(y / temp, dim=0)
 
         idx = torch.multinomial(y, 1)
 
@@ -200,7 +200,7 @@ def kl_weight(it):
     Credit to: https://github.com/kefirski/pytorch_RVAE/
     0 -> 1
     """
-    return (math.tanh((it - 3500)/1000) + 1)/2
+    return (math.tanh((it - 3500) / 1000) + 1) / 2
 
 
 def temp(it):
@@ -208,10 +208,18 @@ def temp(it):
     Softmax temperature annealing
     1 -> 0
     """
-    return 1-kl_weight(it) + 1e-5  # To avoid overflow
+    return 1 - kl_weight(it) + 1e-5  # To avoid overflow
 
 
 def train_ctrl_gen():
+    """
+    Not using fastNLP.Trainer because
+    1. different losses need to calculated in each step
+    2. gradients of losses backward to different parameters
+    3. clip gradients norm before trainers' steps
+    4. hyper-parameters for losses are not static but in variation with the # of steps
+    :return:
+    """
 
     lr = 0.001
     n_iter = 5000
@@ -290,14 +298,13 @@ def train_ctrl_gen():
             c = sample_c_prior(cf.c_dim)
 
             sample_idxs = sample_sentence(z, c)
-            sample_sent = [vocab.to_word(idx) for idx in sample_idxs]
+            sample_sent = ' '.join([vocab.to_word(idx) for idx in sample_idxs])
 
-            print('Iter-{}; loss_d: {:.4f}; loss_G: {:.4f}'
-                  .format(it, float(loss_d), float(loss_g)))
+            print('Iter-{}; loss_d: {:.4f}; loss_G: {:.4f}'.format(it, float(loss_d), float(loss_g)))
 
             _, c_idx = torch.max(c, dim=1)
 
-            print('c = {}'.format(int(c_idx)))
+            print('c = {}'.format({0: 'negative', 1: 'positive'}[int(c_idx)]))
             print('Sample: "{}"'.format(sample_sent))
             print()
 
@@ -318,7 +325,7 @@ if __name__ == '__main__':
                 save_model(vae, 'models/vae.bin')
                 print('vae model saved.')
 
-        if os.path.exists('models/vae.bin'):
+        elif os.path.exists('models/vae.bin'):
             vae.load_state_dict(torch.load('models/vae.bin'))
             print('vae model loaded.')
 

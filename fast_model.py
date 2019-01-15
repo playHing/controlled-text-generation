@@ -3,10 +3,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from itertools import chain
 
-from .fast_config import FastConfig
-from fastNLP import models, modules
+from fast_config import FastConfig
 
 
 @DeprecationWarning
