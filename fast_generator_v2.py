@@ -15,8 +15,8 @@ import argparse
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser(
-                    description='Conditional Text Generation: Train VAE as in Bowman, 2016, with c ~ p(c). '
-                                'Fork and reimplement with fastNLP.')
+    description='Conditional Text Generation: Train VAE as in Bowman, 2016, with c ~ p(c). '
+                'Fork and re-implement with fastNLP.')
 parser.add_argument('--gpu', default=False, action='store_true', help='whether to run in the GPU')
 parser.add_argument('--save', default=False, action='store_true', help='whether to save model or not')
 args = parser.parse_args()
@@ -40,17 +40,18 @@ disc = cnn_text_classification.CNNText(cf.n_vocab, cf.emb_dim, cf.c_dim)
 
 
 def train_variational_ae():
+    n_epochs = 100
 
-    VariationalAE.init_hyper_params(20000, -2)
+    VariationalAE.init_hyper_params(n_epochs, -2)
     trainer = Trainer(
         train_data=fast_data.train_data,
         dev_data=fast_data.test_data,
         model=vae,
         loss=LossFunc(VariationalAE.loss),
         metrics=AccuracyMetric(target='dec_target'),
-        n_epochs=5,
+        n_epochs=n_epochs,
         batch_size=batch_size,
-        optimizer=Adam(lr=0.01, weight_decay=0, model_params=vae.parameters())
+        optimizer=Adam(lr=0.001, weight_decay=0, model_params=vae.parameters())
     )
     trainer.train()
     print('Train finished!')

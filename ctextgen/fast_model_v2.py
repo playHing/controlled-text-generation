@@ -51,7 +51,9 @@ class Encoder(nn.Module):
         :param input: [batch_size, seq_len, emb_dim]
         :return: mu, log_var, [batch_size, z_dim]
         """
-        _, h = self.encoder(input.transpose(0, 1), None)                   # h is the last output of GRU
+        # h, [num_layers * num_directions, batch, hidden_size]
+        _, h = self.encoder(input.transpose(0, 1), None)
+        h = h.transpose(0, 1).contiguous()
 
         # Forward to latent
         h = h.view(-1, self.cf.h_dim)
@@ -81,17 +83,18 @@ class Decoder(nn.Module):
 
         # Forward
         seq_len = dec_inputs.size(1)
-        init_h = torch.cat([z.unsqueeze(0), c.unsqueeze(0)], dim=2)             # [batch_size, z_dim+c_dim]
+        init_h = torch.cat([z.unsqueeze(0), c.unsqueeze(0)], dim=2)             # [1, batch_size, z_dim+c_dim]
         inputs_emb = self.word_emb(dec_inputs)                                  # [batch_size, seq_len, emb_dim]
-        init_h_repeat = init_h.repeat(seq_len, 1, 1).transpose(0, 1)
-        inputs_emb = torch.cat([inputs_emb, init_h_repeat], 2)
+        init_h_repeat = init_h.repeat(seq_len, 1, 1)
+        inputs_emb = torch.cat([inputs_emb.transpose(0, 1), init_h_repeat], 2)  # [seq_len, batch_size, xxx]
 
-        outputs, _ = self.decoder(inputs_emb.transpose(0, 1), init_h)
+        outputs, _ = self.decoder(inputs_emb, init_h)
         seq_len, batch_size, _ = outputs.size()
 
-        outputs = outputs.view(batch_size * seq_len, -1)
+        outputs = outputs.view(seq_len * batch_size, -1)
         y = self.decoder_fc(outputs)
-        y = y.view(batch_size, seq_len, self.cf.n_vocab)
+        y = y.view(seq_len, batch_size, self.cf.n_vocab)
+        y = y.transpose(0, 1).contiguous()
 
         return y
 
@@ -147,14 +150,8 @@ def sample_c_prior(c_dim: int, size=1):
 
 class VariationalAE(nn.Module):
 
-    # word-around
     # Annealing for KL term
-    kld_start_inc = None
-    kld_weight = None
-    kld_max = None
-    n_iter = None
-    kld_inc = None
-    it = None
+    kld_weight = 0.05
 
     def __init__(self, word_emb: WordEmbedding, encoder: Encoder,
                  decoder: Decoder, cf: FastConfig):
@@ -180,25 +177,4 @@ class VariationalAE(nn.Module):
         )
         kl_loss = torch.mean(0.5 * torch.sum(torch.exp(log_var) + mu ** 2 - 1 - log_var, 1))
 
-        VariationalAE.update_hyper_params()
         return recon_loss + VariationalAE.kld_weight * kl_loss
-
-    # word-around
-    @staticmethod
-    def init_hyper_params(n_iter, it_begin, kld_start_inc=3000, kld_weight=0.01, kld_max=0.15):
-        VariationalAE.kld_start_inc = kld_start_inc
-        VariationalAE.kld_weight = kld_weight
-        VariationalAE.kld_max = kld_max
-        VariationalAE.n_iter = n_iter
-        VariationalAE.kld_inc = \
-            (VariationalAE.kld_max - VariationalAE.kld_weight) / (n_iter - VariationalAE.kld_start_inc)
-        VariationalAE.it = it_begin
-
-    # word-around
-    @staticmethod
-    def update_hyper_params():
-        # Anneal kl_weight
-        VariationalAE.it += 1
-        if VariationalAE.it > VariationalAE.kld_start_inc and \
-                VariationalAE.kld_weight < VariationalAE.kld_max:
-            VariationalAE.kld_weight += VariationalAE.kld_inc
