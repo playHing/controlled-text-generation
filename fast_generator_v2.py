@@ -1,7 +1,6 @@
 import os
 import math
 
-import torch
 import torch.optim as optim
 from ctextgen.fast_model_v2 import *
 from ctextgen.fast_data import FastData
@@ -19,6 +18,7 @@ parser = argparse.ArgumentParser(
                 'Fork and re-implement with fastNLP.')
 parser.add_argument('--gpu', default=False, action='store_true', help='whether to run in the GPU')
 parser.add_argument('--save', default=False, action='store_true', help='whether to save model or not')
+parser.add_argument('--train_vae', default=False, action='store_true', help='whether to train VAE or not')
 args = parser.parse_args()
 
 batch_size = 32
@@ -40,7 +40,7 @@ vae = VariationalAE(word_emb, encoder, decoder, cf)
 
 
 def train_variational_ae():
-    n_epochs = 5
+    n_epochs = 100
 
     trainer = Trainer(
         train_data=fast_data.train_data,
@@ -214,7 +214,7 @@ def temp(it):
 def train_ctrl_gen():
 
     lr = 0.001
-    n_iter = 5
+    n_iter = 5000
     log_interval = 100
 
     beta = 0.1
@@ -247,7 +247,7 @@ def train_ctrl_gen():
         loss_d = loss_s + lambda_u * loss_u
 
         loss_d.backward()
-        torch.nn.utils.clip_grad_norm(disc.parameters(), 5)
+        torch.nn.utils.clip_grad_norm_(disc.parameters(), 5)
         trainer_d.step()
         trainer_d.zero_grad()
 
@@ -270,7 +270,7 @@ def train_ctrl_gen():
         loss_g = loss_vae + lambda_c * loss_attr_c + lambda_z * loss_attr_z
 
         loss_g.backward()
-        torch.nn.utils.clip_grad_norm(decoder.parameters(), 5)
+        torch.nn.utils.clip_grad_norm_(decoder.parameters(), 5)
         trainer_g.step()
         trainer_g.zero_grad()
 
@@ -281,7 +281,7 @@ def train_ctrl_gen():
         loss_e = VariationalAE.loss(vae_output['pred'], vae_output['mu'], vae_output['log_var'], labels['dec_target'])
 
         loss_e.backward()
-        torch.nn.utils.clip_grad_norm(encoder.parameters(), 5)
+        torch.nn.utils.clip_grad_norm_(encoder.parameters(), 5)
         trainer_e.step()
         trainer_e.zero_grad()
 
@@ -302,18 +302,30 @@ def train_ctrl_gen():
             print()
 
 
-def save_model(path):
+def save_model(model: nn.Module, path):
     if not os.path.exists('models/'):
         os.makedirs('models/')
-    torch.save(vae.state_dict(), path)
+    torch.save(model.state_dict(), path)
 
 
 if __name__ == '__main__':
     try:
-        #train_variational_ae()
-        if args.save:
-            save_model('models/vae.bin')
+        if args.train_vae:
+
+            train_variational_ae()
+
+            if args.save:
+                save_model(vae, 'models/vae.bin')
+                print('vae model saved.')
+
+        if os.path.exists('models/vae.bin'):
+            vae.load_state_dict(torch.load('models/vae.bin'))
+            print('vae model loaded.')
+
         train_ctrl_gen()
+
+        if args.save:
+            save_model(disc, 'models/disc.bin')
 
     except KeyboardInterrupt:
         exit(0)
