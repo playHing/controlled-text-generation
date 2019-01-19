@@ -4,7 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 from itertools import chain
-import fastNLP
 
 
 class RNN_VAE(nn.Module):
@@ -36,12 +35,10 @@ class RNN_VAE(nn.Module):
         """
         if pretrained_embeddings is None:
             self.emb_dim = h_dim
-            # self.word_emb = nn.Embedding(n_vocab, h_dim, self.PAD_IDX)
-            self.word_emb = fastNLP.modules.encoder.embedding.Embedding(n_vocab, h_dim, self.PAD_IDX).embed
+            self.word_emb = nn.Embedding(n_vocab, h_dim, self.PAD_IDX)
         else:
             self.emb_dim = pretrained_embeddings.size(1)
-            # self.word_emb = nn.Embedding(n_vocab, self.emb_dim, self.PAD_IDX)
-            self.word_emb = fastNLP.modules.encoder.embedding.Embedding(n_vocab, self.emb_dim, self.PAD_IDX).embed
+            self.word_emb = nn.Embedding(n_vocab, self.emb_dim, self.PAD_IDX)
 
             # Set pretrained embeddings
             self.word_emb.weight.data.copy_(pretrained_embeddings)
@@ -53,16 +50,14 @@ class RNN_VAE(nn.Module):
         Encoder is GRU with FC layers connected to last hidden unit
         """
         self.encoder = nn.GRU(self.emb_dim, h_dim)
-        # self.q_mu = nn.Linear(h_dim, z_dim)
-        # self.q_logvar = nn.Linear(h_dim, z_dim)
-        self.q_mu = fastNLP.modules.encoder.linear.Linear(h_dim, z_dim)
-        self.q_logvar = fastNLP.modules.encoder.linear.Linear(h_dim, z_dim)
+        self.q_mu = nn.Linear(h_dim, z_dim)
+        self.q_logvar = nn.Linear(h_dim, z_dim)
 
         """
         Decoder is GRU with `z` and `c` appended at its inputs
         """
         self.decoder = nn.GRU(self.emb_dim+z_dim+c_dim, z_dim+c_dim, dropout=0.3)
-        self.decoder_fc = fastNLP.modules.encoder.linear.Linear(z_dim+c_dim, n_vocab)
+        self.decoder_fc = nn.Linear(z_dim+c_dim, n_vocab)
 
         """
         Discriminator is CNN as in Kim, 2014
@@ -73,8 +68,7 @@ class RNN_VAE(nn.Module):
 
         self.disc_fc = nn.Sequential(
             nn.Dropout(0.5),
-            # fastNLP.modules.dropout.TimestepDropout(0.5),
-            fastNLP.modules.encoder.linear.Linear(300, 2)
+            nn.Linear(300, 2)
         )
 
         self.discriminator = nn.ModuleList([
@@ -187,6 +181,7 @@ class RNN_VAE(nn.Module):
         Inputs must be embeddings: mbsize x seq_len x emb_dim
         """
         inputs = inputs.unsqueeze(1)  # mbsize x 1 x seq_len x emb_dim
+
         x3 = F.relu(self.conv3(inputs)).squeeze()
         x4 = F.relu(self.conv4(inputs)).squeeze()
         x5 = F.relu(self.conv5(inputs)).squeeze()
@@ -349,7 +344,7 @@ class RNN_VAE(nn.Module):
         Soft embeddings are calculated as weighted average of word_emb
         according to p(x|z,c).
         """
-        # self.eval()
+        self.eval()
 
         z, c = z.view(1, 1, -1), c.view(1, 1, -1)
 

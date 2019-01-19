@@ -9,7 +9,7 @@ import numpy as np
 from torch.autograd import Variable
 
 from ctextgen.dataset import SST_Dataset
-from ctextgen.origin_model import RNN_VAE
+from ctextgen.model import RNN_VAE
 
 import argparse
 import random
@@ -51,14 +51,14 @@ model = RNN_VAE(
 )
 
 if args.gpu:
-    model.load_state_dict(torch.load('models/{}.bin'.format(args.model)))
+    model.load_state_dict(torch.load('models/trial1/{}.bin'.format(args.model)))
 else:
-    model.load_state_dict(torch.load('models/{}.bin'.format(args.model), map_location=lambda storage, loc: storage))
+    model.load_state_dict(torch.load('models/trial1/{}.bin'.format(args.model), map_location=lambda storage, loc: storage))
     # model.load_state_dict(torch.load('models/vae.bin'.format(args.model), map_location=lambda storage, loc: storage))
 
 fpos = open("fast"+args.name+".pos", "w")
 fneg = open("fast"+args.name+".neg", "w")
-epoch = 1000
+epoch = 5000
 c = model.sample_c_prior(1)
 c[0, 0], c[0, 1] = 1, 0
 for _ in range(epoch):
