@@ -15,6 +15,7 @@ class FastData:
 
         data_set = DataSet()
         if data_type == 'yelp':
+            path = '.data/yelp'
             for db_set in ['train']:
                 text_file = os.path.join(path, 'sentiment.' + db_set + '.text')
                 label_file = os.path.join(path, 'sentiment.' + db_set + '.labels')
@@ -28,6 +29,7 @@ class FastData:
             data_set.drop(lambda x: len(x['words']) > seq_len + 2)
 
         elif data_type == 'sst':
+            path = '.data/sst/trees'
             text = data.Field(init_token='<start>', eos_token='<eos>', lower=True, tokenize='spacy', fix_length=16)
             label = data.Field(sequential=False, unk_token='<unk>')
             filter = lambda ex: len(ex.text) <= seq_len and ex.label != 'neutral'
@@ -38,6 +40,17 @@ class FastData:
                 data_set.append(Instance(words=ex.text, label={'negative': 0, 'positive': 1}[ex.label]))
 
             data_set.apply(lambda x: ['<start>'] + [w.lower() for w in x['words']] + ['<eos>'], new_field_name='words')
+
+        elif data_type == 'test':
+            with io.open('fasttrial1.pos', 'r', encoding="utf-8") as f:
+                for text in f:
+                    data_set.append(Instance(text=text, label=1))
+            with io.open('fasttrial1.neg', 'r', encoding="utf-8") as f:
+                for text in f:
+                    data_set.append(Instance(text=text, label=0))
+
+            data_set.apply(lambda x: ['<start>'] + x['text'].lower().split() + ['<eos>'], new_field_name='words')
+            data_set.drop(lambda x: len(x['words']) > seq_len + 2)
 
         data_set.apply(lambda x: x['words'] + ['<pad>'] * (seq_len + 2 - len(x['words'])), new_field_name='words')
 

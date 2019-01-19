@@ -214,10 +214,10 @@ def temp(it):
 def train_ctrl_gen():
     """
     Not using fastNLP.Trainer because
-    1. different losses need to calculated in each step
+    1. involve more than one loss in each step
     2. gradients of losses backward to different parameters
-    3. clip gradients norm before trainers' steps
-    4. hyper-parameters for losses are not static but in variation with the # of steps
+    3. hyper-parameters for losses are not static but in variation with the # of steps
+    4. clip gradients norm before trainers' steps - FastNLP 0.3
     :return:
     """
 
@@ -332,7 +332,10 @@ if __name__ == '__main__':
         train_ctrl_gen()
 
         if args.save:
+            save_model(vae, 'models/vae-updated.bin')
+            print('updated vae model saved.')
             save_model(disc, 'models/disc.bin')
+            print('disc model saved.')
 
     except KeyboardInterrupt:
         exit(0)
