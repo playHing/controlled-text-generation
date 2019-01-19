@@ -115,3 +115,8 @@ for it in range(n_iter):
             accs.append(acc)
 
         print('Iter-{}; loss: {:.4f}; val_acc: {:.4f}'.format(it, float(loss), np.mean(accs)))
+
+if not os.path.exists('models/'):
+    os.makedirs('models/')
+
+torch.save(model.state_dict(), 'models/clf.bin')

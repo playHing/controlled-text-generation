@@ -19,6 +19,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--gpu', default=False, action='store_true', help='whether to run in the GPU')
 parser.add_argument('--save', default=False, action='store_true', help='whether to save model or not')
 parser.add_argument('--train_vae', default=False, action='store_true', help='whether to train VAE or not')
+parser.add_argument('--test', default=False, action='store_true', help='whether to test or not')
 args = parser.parse_args()
 
 batch_size = 32
@@ -315,10 +316,28 @@ def save_model(model: nn.Module, path):
     torch.save(model.state_dict(), path)
 
 
+def test():
+    inputs, labels = fast_data.next_batch()
+    inputs = inputs['word_seq']
+    labels = labels['label_seq']
+    assert inputs.shape == (batch_size, 17)
+    assert labels.shape[0] == 32
+    assert inputs.shape[0] == batch_size
+    d = vae.forward(word_seq=inputs)
+    assert d['pred'].shape == (batch_size, 17, len(vocab))
+    d = disc.forward(word_seq=inputs)
+    assert d['pred'].shape == (batch_size, cf.c_dim)
+
+    print('test done.')
+
+
 if __name__ == '__main__':
     try:
-        if args.train_vae:
+        if args.test:
+            test()
+            exit()
 
+        if args.train_vae:
             train_variational_ae()
 
             if args.save:
