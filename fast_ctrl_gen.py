@@ -27,7 +27,7 @@ fast_data = FastData(batch_size=batch_size)
 print('train data size: {}'.format(len(fast_data.train_data)))
 vocab = fast_data.vocab
 
-cf = FastConfig(emb_dim=64, h_dim=64, z_dim=64, c_dim=2, n_vocab=len(vocab),
+cf = FastConfig(emb_dim=128, h_dim=128, z_dim=100, c_dim=2, n_vocab=9557,
                 unk_idx=vocab.unknown_idx, pad_idx=vocab.padding_idx,
                 start_idx=vocab.to_index('<start>'),
                 eos_idx=vocab.to_index('<eos>'),
@@ -344,15 +344,15 @@ if __name__ == '__main__':
                 save_model(vae, 'models/vae.bin')
                 print('vae model saved.')
 
-        elif os.path.exists('models/vae.bin'):
-            vae.load_state_dict(torch.load('models/vae.bin'))
-            print('vae model loaded.')
+        elif os.path.exists('models/vae-yelp.bin'):
+            vae.load_state_dict(torch.load('models/vae-yelp.bin', map_location='cpu'))
+            print('vae-yelp model loaded.')
 
         train_ctrl_gen()
 
         if args.save:
-            save_model(vae, 'models/vae-updated.bin')
-            print('updated vae model saved.')
+            save_model(vae, 'models/vae-yelp-updated.bin')
+            print('updated vae-yelp model saved.')
             save_model(disc, 'models/disc.bin')
             print('disc model saved.')
 
