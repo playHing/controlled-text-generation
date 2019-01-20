@@ -10,10 +10,11 @@ from fastNLP.core.sampler import SequentialSampler
 
 class FastData:
 
-    def __init__(self, path='.data/sst/trees', data_type='sst',
+    def __init__(self, path='.data/sst/trees', data_type='sst', test=False,
                  batch_size=32, split_ratio=0.1, seq_len=15, min_freq=2):
 
         data_set = DataSet()
+        _test_data = DataSet()
         if data_type == 'yelp':
             path = '.data/yelp'
             for db_set in ['train']:
@@ -41,24 +42,36 @@ class FastData:
 
             data_set.apply(lambda x: ['<start>'] + [w.lower() for w in x['words']] + ['<eos>'], new_field_name='words')
 
-        elif data_type == 'test':
-            with io.open('fasttrial1.pos', 'r', encoding="utf-8") as f:
-                for text in f:
-                    data_set.append(Instance(text=text, label=1))
-            with io.open('fasttrial1.neg', 'r', encoding="utf-8") as f:
-                for text in f:
-                    data_set.append(Instance(text=text, label=0))
-
-            data_set.apply(lambda x: ['<start>'] + x['text'].lower().split() + ['<eos>'], new_field_name='words')
-            data_set.drop(lambda x: len(x['words']) > seq_len + 2)
-
         data_set.apply(lambda x: x['words'] + ['<pad>'] * (seq_len + 2 - len(x['words'])), new_field_name='words')
 
-        _train_data, _ = data_set.split(split_ratio)
+        _train_data = data_set
+        print('# of sentences used to build vocab: {}'.format(len(_train_data)))
 
         _vocab = Vocabulary(min_freq=min_freq)
         _train_data.apply(lambda x: [_vocab.add(word) for word in x['words']])
         _vocab.build_vocab()
+
+        if test:
+            print('test mode.')
+            #s = 0
+            with io.open('fast_gen_data2.pos', 'r', encoding="utf-8") as f:
+                for text in f:
+                    _test_data.append(Instance(text=text, label=1))
+            #        s += 1
+            #        if s > 32 * 5:
+            #            break
+            #s = 0
+            with io.open('fast_gen_data2.neg', 'r', encoding="utf-8") as f:
+                for text in f:
+                    _test_data.append(Instance(text=text, label=0))
+            #        s += 1
+            #        if s > 32 * 5:
+            #            break
+
+            _test_data.apply(lambda x: ['<start>'] + x['text'].lower().split() + ['<eos>'], new_field_name='words')
+            _test_data.drop(lambda x: len(x['words']) > seq_len + 2)
+            _test_data.apply(lambda x: x['words'] + ['<pad>'] * (seq_len + 2 - len(x['words'])), new_field_name='words')
+            data_set = _test_data
 
         data_set.apply(lambda x: [_vocab.to_index(w) for w in x['words']], new_field_name='word_seq', is_input=True)
         data_set.apply(lambda x: x['word_seq'][1:] + [0], new_field_name='dec_target', is_target=True)

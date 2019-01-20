@@ -19,9 +19,10 @@ parser.add_argument('--test', default=False, action='store_true', help='whether 
 args = parser.parse_args()
 
 batch_size = 32
-fast_data = FastData(data_type='sst', test=args.test, batch_size=batch_size)
+fast_data = FastData(data_type='sst', test=not args.test, batch_size=batch_size)
 print('train data size: {}'.format(len(fast_data.train_data)))
 vocab = fast_data.vocab
+print('vocab size: {}'.format(len(vocab)))
 
 cf = FastConfig(emb_dim=64, h_dim=64, z_dim=64, c_dim=2, n_vocab=len(vocab),
                 unk_idx=vocab.unknown_idx, pad_idx=vocab.padding_idx,
@@ -33,7 +34,7 @@ disc = cnn_text_classification.CNNText(cf.n_vocab, cf.emb_dim, cf.c_dim)
 
 
 def train_classifier():
-    n_epochs = 100
+    n_epochs = 50
 
     trainer = Trainer(
         train_data=fast_data.train_data,
@@ -82,11 +83,11 @@ if __name__ == '__main__':
             train_classifier()
 
             if args.save:
-                save_model(disc, 'models/disc-eval.bin')
-                print('disc-eval model saved.')
+                save_model(disc, 'models/disc-eval2.bin')
+                print('disc-eval2 model saved.')
         else:
-            disc.load_state_dict(torch.load('models/disc-eval.bin'))
-            print('disc-eval model loaded.')
+            disc.load_state_dict(torch.load('models/disc-eval2.bin'))
+            print('disc-eval2 model loaded.')
             test_gen_data()
 
     except KeyboardInterrupt:

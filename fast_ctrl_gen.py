@@ -23,15 +23,23 @@ parser.add_argument('--test', default=False, action='store_true', help='whether 
 args = parser.parse_args()
 
 batch_size = 32
-fast_data = FastData(batch_size=batch_size)
+fast_data = FastData(data_type='sst', batch_size=batch_size)
 print('train data size: {}'.format(len(fast_data.train_data)))
 vocab = fast_data.vocab
 
+"""
 cf = FastConfig(emb_dim=128, h_dim=128, z_dim=100, c_dim=2, n_vocab=9557,
                 unk_idx=vocab.unknown_idx, pad_idx=vocab.padding_idx,
                 start_idx=vocab.to_index('<start>'),
                 eos_idx=vocab.to_index('<eos>'),
                 gpu=args.gpu)
+"""
+cf = FastConfig(emb_dim=64, h_dim=64, z_dim=64, c_dim=2, n_vocab=len(vocab),
+                unk_idx=vocab.unknown_idx, pad_idx=vocab.padding_idx,
+                start_idx=vocab.to_index('<start>'),
+                eos_idx=vocab.to_index('<eos>'),
+                word_dropout_prob=0.,
+                gpu=False)
 
 disc = cnn_text_classification.CNNText(cf.n_vocab, cf.emb_dim, cf.c_dim)
 word_emb = disc.embed
@@ -41,7 +49,7 @@ vae = VariationalAE(word_emb, encoder, decoder, cf)
 
 
 def train_variational_ae():
-    n_epochs = 500
+    n_epochs = 250
 
     trainer = Trainer(
         train_data=fast_data.train_data,
@@ -99,7 +107,8 @@ def sample_sentence(z, c, raw=False, temp=1):
     if raw:
         outputs.append(cf.START_IDX)
 
-    for i in range(cf.MAX_SENT_LEN):
+    i = 0
+    while i < cf.MAX_SENT_LEN:
         emb = word_emb(word).view(1, 1, -1)
         emb = torch.cat([emb, z, c], 2)
 
@@ -117,7 +126,9 @@ def sample_sentence(z, c, raw=False, temp=1):
         if not raw and idx == cf.EOS_IDX:
             break
 
-        outputs.append(idx)
+        if idx != cf.UNK_IDX:
+            outputs.append(idx)
+            i = i + 1
 
     if raw:
         outputs = Variable(torch.LongTensor(outputs)).unsqueeze(0)
@@ -223,7 +234,7 @@ def train_ctrl_gen():
     """
 
     lr = 0.001
-    n_iter = 5000
+    n_iter = 500
     log_interval = 100
 
     beta = 0.1
@@ -235,7 +246,7 @@ def train_ctrl_gen():
     trainer_g = optim.Adam(decoder.parameters(), lr=lr)
     trainer_e = optim.Adam(encoder.parameters(), lr=lr)
 
-    for it in tqdm(range(n_iter)):
+    for it in range(n_iter):
 
         inputs, labels = fast_data.next_batch()
 
@@ -341,20 +352,20 @@ if __name__ == '__main__':
             train_variational_ae()
 
             if args.save:
-                save_model(vae, 'models/vae.bin')
-                print('vae model saved.')
+                save_model(vae, 'models/vae-sst.bin')
+                print('vae-sst model saved.')
 
-        elif os.path.exists('models/vae-yelp.bin'):
-            vae.load_state_dict(torch.load('models/vae-yelp.bin', map_location='cpu'))
-            print('vae-yelp model loaded.')
+        elif os.path.exists('models/vae-sst.bin'):
+            vae.load_state_dict(torch.load('models/vae-sst.bin', map_location='cpu'))
+            print('vae-sst model loaded.')
 
         train_ctrl_gen()
 
         if args.save:
-            save_model(vae, 'models/vae-yelp-updated.bin')
-            print('updated vae-yelp model saved.')
-            save_model(disc, 'models/disc.bin')
-            print('disc model saved.')
+            save_model(vae, 'models/vae-sst-updated.bin')
+            print('updated vae-sst model saved.')
+            save_model(disc, 'models/disc-sst.bin')
+            print('disc-sst model saved.')
 
     except KeyboardInterrupt:
         exit(0)

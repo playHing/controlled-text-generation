@@ -24,7 +24,8 @@ parser.add_argument('--gpu', default=False, action='store_true',
 args = parser.parse_args()
 
 batch_size = 32
-fast_data = FastData(data_type='test', batch_size=batch_size)
+fast_data = FastData(data_type='sst', test=False, batch_size=batch_size)
+# fixme: the way of vocab built.. torchtext' and fastNLP' are different!..
 print('train data size: {}'.format(len(fast_data.train_data)))
 vocab = fast_data.vocab
 
